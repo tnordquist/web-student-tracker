@@ -6,6 +6,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Student Tracker App</title>
+<link type="text/css" rel="stylesheet" href="css/style.css">
 </head>
 
 <%
