@@ -1,6 +1,7 @@
 package com.luv2code.web.jdbc;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -38,49 +39,73 @@ public class StudentDBUtil {
 			myResultSet = myStatement.executeQuery(sql);
 
 			// process the result set
-			while(myResultSet.next()) {
-				
+			while (myResultSet.next()) {
+
 				// retrieve data from result set row
 				int id = myResultSet.getInt("id");
 				String firstName = myResultSet.getString("first_name");
 				String lastName = myResultSet.getString("last_name");
 				String email = myResultSet.getString("email");
-				
+
 				// create new student object
 				Student tempStudent = new Student(id, firstName, lastName, email);
-				
+
 				// add it to the list of students
 				students.add(tempStudent);
 			}
 			// close jdbc objects
 			return students;
 		} finally {
-			close(myConnection,myStatement,myResultSet);
+			close(myConnection, myStatement, myResultSet);
 		}
 
 	}
 
 	private void close(Connection myConnection, Statement myStatement, ResultSet myResultSet) {
-		
+
 		try {
-			if(myResultSet != null) {
+			if (myResultSet != null) {
 				myResultSet.close();
 			}
-			if(myStatement != null) {
+			if (myStatement != null) {
 				myStatement.close();
 			}
-			if(myConnection !=null) {
+			if (myConnection != null) {
 				myConnection.close();
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		
+
 	}
 
-	public void addStudent(Student theStudent) {
-		// TODO Auto-generated method stub
-		
+	public void addStudent(Student theStudent) throws Exception {
+
+		Connection myConnection = null;
+		PreparedStatement myStatement = null;
+
+		try {
+			// get database connection
+			myConnection = dataSource.getConnection();
+
+			// create sql for insert
+			String sql = "insert into student " + "(first_name, last_name, email)" + "values(?,?,?)";
+
+			myStatement = myConnection.prepareStatement(sql);
+
+			// set the param values for the student
+			myStatement.setString(1, theStudent.getFirstName());
+			myStatement.setString(2, theStudent.getLastName());
+			myStatement.setString(3, theStudent.getEmail());
+
+			// execute sql statement
+			myStatement.execute();
+
+		} finally {
+			// take care of JDBC objects
+			close(myConnection, myStatement, null);
+		}
+
 	}
 
 }
