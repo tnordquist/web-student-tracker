@@ -64,6 +64,9 @@ public class StudentControllerServlet extends HttpServlet {
 				break;
 			case "ADD":
 				addStudent(request, response);
+			case "LOAD":
+				loadStudent(request, response);
+				break;
 			default:
 				listStudents(request, response);
 				break;
@@ -73,28 +76,45 @@ public class StudentControllerServlet extends HttpServlet {
 		}
 	}
 
+	private void loadStudent(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		// read student id from form data
+		String theStudentId = request.getParameter("studentId");
+
+		// get student from database (db util)
+		Student theStudent = studentDBUtil.getStudent(theStudentId);
+
+		// place student in the request attribute
+		request.setAttribute("THE_STUDENT", theStudent);
+
+		// send to jsp page: update-student-form.jsp
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/update-student-form.jsp");
+		requestDispatcher.forward(request, response);
+
+	}
+
 	private void addStudent(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		
+
 		// read student info from form data
 		String firstName = request.getParameter("firstName");
 		String lastName = request.getParameter("lastName");
 		String email = request.getParameter("email");
-		
+
 		// create a new student object
 		Student theStudent = new Student(firstName, lastName, email);
-		
+
 		// add the student to the database
 		studentDBUtil.addStudent(theStudent);
-		
+
 		// send back to main page, the student list
 		listStudents(request, response);
-		
+
 	}
 
 	private void listStudents(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		// get students from db util
-		List<Student> students = studentDBUtil.getStudents();
+		List<Student> students = studentDBUtil.getStudent();
 
 		// add students to the request object
 		request.setAttribute("STUDENT_LIST", students);

@@ -3,6 +3,7 @@ package com.luv2code.web.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ public class StudentDBUtil {
 		dataSource = theDataSource;
 	}
 
-	public List<Student> getStudents() throws Exception {
+	public List<Student> getStudent() throws Exception {
 
 		List<Student> students = new ArrayList<>();
 
@@ -38,7 +39,7 @@ public class StudentDBUtil {
 			// execute sql query
 			myResultSet = myStatement.executeQuery(sql);
 
-			// process the result set
+			// process the result recordset
 			while (myResultSet.next()) {
 
 				// retrieve data from result set row
@@ -104,6 +105,54 @@ public class StudentDBUtil {
 		} finally {
 			// take care of JDBC objects
 			close(myConnection, myStatement, null);
+		}
+
+	}
+
+	public Student getStudent(String theStudentId) throws Exception {
+
+		Student theStudent = null;
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		int studentId;
+
+		try {
+
+			// convert student id to an int˙
+			studentId = Integer.parseInt(theStudentId);
+
+			// get connection to database
+			connection = dataSource.getConnection();
+
+			// create sql statement to get selected student
+			String myQuery = "select * from from student where id=?";
+
+			// create prepared statement
+			preparedStatement = connection.prepareStatement(myQuery);
+
+			// set params
+			preparedStatement.setInt(1, studentId);
+
+			// generate the recordset
+			resultSet = preparedStatement.executeQuery();
+
+			// retrieve data from result set row
+			if (resultSet.next()) {
+				String firstName = resultSet.getString("first_name");
+				String lastName = resultSet.getString("last_name");
+				String email = resultSet.getString("email");
+
+				// use the studentId during construction of the new student object
+				theStudent = new Student(studentId, firstName, lastName, email);
+
+			} else {
+				throw new Exception("Could not find that studentId: " + studentId);
+			}
+			return theStudent;
+		} finally {
+			// close jdbc objects
+			close(connection, preparedStatement, resultSet);
 		}
 
 	}
