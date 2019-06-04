@@ -126,10 +126,10 @@ public class StudentDBUtil {
 			connection = dataSource.getConnection();
 
 			// create sql statement to get selected student
-			String myQuery = "select * from from student where id=?";
+			String sql = "select * from student where id=?";
 
 			// create prepared statement
-			preparedStatement = connection.prepareStatement(myQuery);
+			preparedStatement = connection.prepareStatement(sql);
 
 			// set params
 			preparedStatement.setInt(1, studentId);
