@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.eclipse.jdt.internal.compiler.flow.FinallyFlowContext;
+
 public class StudentDBUtil {
 
 	private DataSource dataSource;
@@ -153,6 +155,32 @@ public class StudentDBUtil {
 		} finally {
 			// close jdbc objects
 			close(connection, preparedStatement, resultSet);
+		}
+
+	}
+
+	public void updateStudent(Student theStudent) throws Exception {
+
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+
+		try {
+			// get db connection
+			connection = dataSource.getConnection();
+			// create SQL update statement
+			String sql = "update student " + "set first_name=?, last_name=?, email=? " + "where id=?";
+			// prepare statement
+			preparedStatement = connection.prepareStatement(sql);
+			// set params
+			preparedStatement.setString(1, theStudent.getFirstName());
+			preparedStatement.setString(2, theStudent.getLastName());
+			preparedStatement.setString(3, theStudent.getEmail());
+			preparedStatement.setInt(4, theStudent.getId());
+			// execute sql statement
+			preparedStatement.execute();
+		} finally {
+			// clean up jdbc objects
+			close(connection, preparedStatement, null);
 		}
 
 	}
