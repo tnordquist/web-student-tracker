@@ -185,37 +185,101 @@ public class StudentDBUtil {
 
 	}
 
-	public void deletStudent(String theStudentId) throws Exception{
-		
+	public void deletStudent(String theStudentId) throws Exception {
+
 		Connection connection = null;
 		PreparedStatement pStatement = null;
-		
+
 		try {
-			
+
 			// convert student id to int
 			int studentId = Integer.parseInt(theStudentId);
-			
+
 			// get connection to database
 			connection = dataSource.getConnection();
-			
+
 			// create sql to delete the student
 			String sql = "delete from student where id=?";
-			
+
 			// prepared statement to use the sql command
 			pStatement = connection.prepareStatement(sql);
-			
+
 			// set the params
 			pStatement.setInt(1, studentId);
-			
+
 			// execute the sql statement
 			pStatement.execute();
-			
+
 		} finally {
 			// clean up jdbc code
 			close(connection, pStatement, null);
 		}
-		// 
-		
+		//
+
+	}
+
+	public List<Student> searchStudents(String theSearchName) throws Exception {
+
+		List<Student> students = new ArrayList<>();
+
+		Connection connection = null;
+		PreparedStatement pStatement = null;
+		ResultSet resultSet = null;
+		int studentId;
+
+		try {
+
+			// get connection to database
+			connection = dataSource.getConnection();
+
+			/*
+			 * Only search by name if theSearchName is not empty
+			 */
+			if (theSearchName != null && theSearchName.trim().length() > 0) {
+				// create sql to search for student by name
+				String sql = "select * from student where lower(first_name) like ? or lower(last_name) like ?";
+
+				// create prepared statement
+				pStatement = connection.prepareStatement(sql);
+
+				// set the params
+				String theSearchNameLike = "%" + theSearchName.toLowerCase() + "%";
+				pStatement.setString(1, theSearchNameLike);
+				pStatement.setString(2, theSearchNameLike);
+
+			} else {
+				// create sql to get all students
+				String sql = "select * from student order by last_name";
+
+				// create prepared statement
+				pStatement = connection.prepareStatement(sql);
+
+			}
+			// execute the sql statement
+			resultSet = pStatement.executeQuery();
+
+			// retrieve data from result set row
+			while (resultSet.next()) {
+
+				// retrieve data from result set row
+				int id = resultSet.getInt("id");
+				String firstName = resultSet.getString("first_name");
+				String lastName = resultSet.getString("last_name");
+				String email = resultSet.getString("email");
+
+				// create new student object
+				Student tempStudent = new Student(id, firstName, lastName, email);
+
+				// add it to the list of students
+				students.add(tempStudent);
+			}
+			return students;
+
+		} finally {
+			// clean up jdbc
+			close(connection, pStatement, resultSet);
+		}
+
 	}
 
 }

@@ -71,7 +71,11 @@ public class StudentControllerServlet extends HttpServlet {
 				updateStudent(request, response);
 				break;
 			case "DELETE":
-				deleteStudent(request,response);
+				deleteStudent(request, response);
+				break;
+			case "SEARCH":
+				searchStudents(request, response);
+				break;
 			default:
 				listStudents(request, response);
 				break;
@@ -80,37 +84,55 @@ public class StudentControllerServlet extends HttpServlet {
 			throw new ServletException(e);
 		}
 	}
-	
-protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException	{
-	
-	try {
-		// read the command parameter
-		String theCommand = request.getParameter("command");
-		
-		// route to the appropriate method
-		switch (theCommand) {
-		case "ADD":
-			addStudent(request, response);
-			break;
 
-		default:
-			listStudents(request, response);
-		}
-		
-	} catch (Exception e) {
-		throw new ServletException(e);
+	private void searchStudents(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		// read search name from the form data
+		String theSearchName = request.getParameter("theSearchName");
+
+		// search students from the db util
+		List<Student> students = studentDBUtil.searchStudents(theSearchName);
+
+		// add students to the request
+		request.setAttribute("STUDENT_LIST", students);
+
+		// send to jsp page (view)
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/list-students.jsp");
+		dispatcher.forward(request, response);
+
 	}
-	
-}	
 
-	private void deleteStudent(HttpServletRequest request, HttpServletResponse response) throws Exception{
-		
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		try {
+			// read the command parameter
+			String theCommand = request.getParameter("command");
+
+			// route to the appropriate method
+			switch (theCommand) {
+			case "ADD":
+				addStudent(request, response);
+				break;
+
+			default:
+				listStudents(request, response);
+			}
+
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+
+	}
+
+	private void deleteStudent(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
 		// read student id from the form data
-		String theStudentId = request.getParameter("studentId");	
-		
+		String theStudentId = request.getParameter("studentId");
+
 		// delete student from the database
 		studentDBUtil.deletStudent(theStudentId);
-		
+
 		// send the user back to the "list students" page
 		listStudents(request, response);
 	}
