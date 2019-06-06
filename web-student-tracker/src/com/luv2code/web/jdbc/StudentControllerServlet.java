@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
+import com.sun.javadoc.ThrowsTag;
+
 /**
  * Servlet implementation class StudentControllerServlet
  */
@@ -62,14 +64,14 @@ public class StudentControllerServlet extends HttpServlet {
 			case "LIST":
 				listStudents(request, response);
 				break;
-			case "ADD":
-				addStudent(request, response);
 			case "LOAD":
 				loadStudent(request, response);
 				break;
 			case "UPDATE":
 				updateStudent(request, response);
 				break;
+			case "DELETE":
+				deleteStudent(request,response);
 			default:
 				listStudents(request, response);
 				break;
@@ -77,6 +79,40 @@ public class StudentControllerServlet extends HttpServlet {
 		} catch (Exception e) {
 			throw new ServletException(e);
 		}
+	}
+	
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException	{
+	
+	try {
+		// read the command parameter
+		String theCommand = request.getParameter("command");
+		
+		// route to the appropriate method
+		switch (theCommand) {
+		case "ADD":
+			addStudent(request, response);
+			break;
+
+		default:
+			listStudents(request, response);
+		}
+		
+	} catch (Exception e) {
+		throw new ServletException(e);
+	}
+	
+}	
+
+	private void deleteStudent(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		
+		// read student id from the form data
+		String theStudentId = request.getParameter("studentId");	
+		
+		// delete student from the database
+		studentDBUtil.deletStudent(theStudentId);
+		
+		// send the user back to the "list students" page
+		listStudents(request, response);
 	}
 
 	private void updateStudent(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -128,7 +164,9 @@ public class StudentControllerServlet extends HttpServlet {
 		studentDBUtil.addStudent(theStudent);
 
 		// send back to main page, the student list
-		listStudents(request, response);
+		// SEND AS REDIRECT to avoid multiple-browser reload issue
+		// listStudents(request, response); this is code before correction was made
+		response.sendRedirect(request.getContextPath() + "/StudentControllerServlet?command=List");
 
 	}
 
